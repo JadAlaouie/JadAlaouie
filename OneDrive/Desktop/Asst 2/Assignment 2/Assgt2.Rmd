@@ -1,0 +1,114 @@
+---
+title: "Assignment 2"
+author: "Jad Alaouie"
+date: '2023-10-14'
+output: html_document
+---
+
+# [**Question 4 :**]{.underline} Develop a module that aggregates the data as you described in (3).
+
+#### *Step 1 : The data set lacks pre-existing headers, necessitating the manual acquisition of column labels. An alternative and more streamlined approach, as opposed to extracting column names through web scraping, involves retrieving them directly from Python after extensive data manipulation and analysis within the Python environment.*
+
+#### Step 2 : Loading and checking the clean data set
+
+```{r}
+data = read.csv("data.csv")
+head(data)
+
+print(anyNA(data))
+```
+
+#### Step 3: We can now create models that aggregate across multiple features in the data.
+
+##### a- Income by Education Level and Gender
+
+```{r}
+library(dplyr)
+```
+
+```{r}
+income_summary = data %>%
+  group_by(education, sex, income) %>%
+  summarise(Count = n())
+
+```
+
+##### b- Occupation-Based Income Analysis
+
+```{r}
+occupation_income_summary = data %>% group_by(occupation,income) %>% summarise(Count = n())
+```
+
+##### c- Marital Status and Work Hours
+
+```{r}
+marital_status_summary = data %>% group_by(marital.status, hours.per.week) %>% summarise(Count = n())
+```
+
+##### d- Age and Education Impact
+
+```{r}
+age_education_summary = data %>% group_by(age,education,income) %>% summarise(Count = n())
+```
+
+##### e- Workclass and Education
+
+```{r}
+workclass_education = data %>% group_by(workclass, education) %>% summarise(Count = n())
+```
+
+## [**Question 5 :**]{.underline} Develop the module that visualizes those aggregations in all interesting ways possible. Use stacking to a large extent possible to allow for overlaid, multidimensional analyses.
+
+#### a- Income by Education Level and Gender :
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+ggplot(income_summary, aes(x = reorder(education, Count), y = Count, fill = income)) + geom_bar(stat = "identity") + facet_wrap(~sex) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(title = "Stacked Bar Chart of Income by Education and Gender", x = "Education", y = "Count")
+```
+
+```{r}
+ggplot(income_summary, aes(x = education, y = Count, fill = income)) + geom_bar(stat = "identity") + facet_grid(sex ~ .) + theme(axis.text.x = element_text(angle = 45, hjust = 1)) + labs(title = "Stacked Bar Chart of Income by Education and Gender", x = "Education", y = "Count")
+```
+
+#### b- Occupation-Based Income Analysis :
+
+```{r}
+ggplot(occupation_income_summary, aes(x = occupation, y = Count, color = income)) + geom_point() + labs(title = "Scatter Plot of Income Count by Occupation", x = "Occupation", y = "Count") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+ggplot(occupation_income_summary, aes(x = occupation, y = Count, fill = income)) + geom_bar(stat = "identity") + labs(title = "Stacked Bar Chart Chart of Income by Occupation", x = "Occupation", y = "Count") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+#### c- Marital Status and Work Hours :
+
+```{r}
+ggplot(marital_status_summary, aes(x = hours.per.week, y = Count, color = marital.status)) +
+  geom_point() + facet_wrap(~marital.status)
+  labs(title = "Scatter Plot of Work Hours vs. Another Variable, Color-coded by Marital Status",
+       xlab("Work Hours") , ylab("Count"))
+```
+
+#### d- Age and Education Impact :
+
+```{r}
+
+ggplot(age_education_summary, aes(x = age, y = Count)) +
+  geom_point(aes(color = income)) +
+  facet_wrap(~ education) +
+  labs(title = "Scatter Plot of Age and Income, Faceted by Education",
+       x = "Age", y = "Count")
+
+```
+
+#### e- Workclass and Education
+
+```{r}
+ggplot(workclass_education, aes(x = workclass, y = Count, fill = workclass)) + facet_wrap(~education) + 
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Clustered Bar Chart of Education Levels by Workclass (Count)",
+       x = "Workclass", y = "Count") + theme(plot.title = element_text(size = 13),axis.text.x = element_text(angle = 90, hjust = 1))
+```
